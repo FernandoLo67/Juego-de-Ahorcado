@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahorcado</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>AHORCADO</h1>
+    <p>Adivina la palabra letra por letra</p>
+  </header>
+
+  <main class="game-card">
+    <section class="top-section">
+
+      <svg id="hangman-svg" width="150" height="190" viewBox="0 0 150 190">
+        <!-- Horca -->
+        <line class="gallows" x1="15"  y1="182" x2="135" y2="182"/>
+        <line class="gallows" x1="55"  y1="182" x2="55"  y2="8"/>
+        <line class="gallows" x1="55"  y1="8"   x2="110" y2="8"/>
+        <line class="gallows" x1="110" y1="8"   x2="110" y2="30"/>
+        <!-- Cuerpo -->
+        <circle id="head"      cx="110" cy="45"  r="14"/>
+        <line   id="body"      x1="110" y1="59"  x2="110" y2="112"/>
+        <line   id="left-arm"  x1="110" y1="74"  x2="86"  y2="98"/>
+        <line   id="right-arm" x1="110" y1="74"  x2="134" y2="98"/>
+        <line   id="left-leg"  x1="110" y1="112" x2="86"  y2="148"/>
+        <line   id="right-leg" x1="110" y1="112" x2="134" y2="148"/>
+      </svg>
+
+      <div class="right-panel">
+        <div>
+          <p class="section-label">Vidas</p>
+          <div id="hearts"></div>
+        </div>
+        <div>
+          <p class="section-label">Palabra</p>
+          <div id="word-display"></div>
+        </div>
+        <div>
+          <p class="section-label">Letras incorrectas</p>
+          <div id="wrong-display">—</div>
+        </div>
+      </div>
+
+    </section>
+
+    <div id="keyboard"></div>
+    <p class="keyboard-hint">También puedes usar el teclado físico</p>
+  </main>
+
+  <!-- Modal resultado -->
+  <div id="modal" class="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title"></h2>
+      <p id="modal-subtitle"></p>
+      <p id="modal-word"></p>
+      <button id="restart-btn">Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
