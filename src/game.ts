@@ -18,7 +18,7 @@ class HangmanGame {
   ];
 
   private state: GameState = this.freshState();
-  private streak = 0;
+  private streak = Number(localStorage.getItem("streak") ?? 0);
 
   constructor() {
     (document.getElementById("restart-btn") as HTMLButtonElement)
@@ -137,8 +137,10 @@ class HangmanGame {
 
     if (won) {
       this.streak++;
+      localStorage.setItem("streak", String(this.streak));
     } else {
       this.streak = 0;
+      localStorage.setItem("streak", "0");
       word.split("").forEach(l => guessed.add(l));
       this.renderWord();
     }
