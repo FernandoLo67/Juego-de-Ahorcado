@@ -1,19 +1,23 @@
 import { randomWord, Category } from "./words.js";
+import { updateHangman } from "./hangman-svg.js";
+
+interface GameState {
+  word: string;
+  category: Category | "";
+  guessed: Set<string>;
+  errors: number;
+  gameOver: boolean;
+}
 
 class HangmanGame {
   private readonly maxErrors = 6;
-  private readonly parts = ["head", "body", "left-arm", "right-arm", "left-leg", "right-leg"];
   private readonly qwerty = [
     ["q","w","e","r","t","y","u","i","o","p"],
     ["a","s","d","f","g","h","j","k","l"],
     ["z","x","c","v","b","n","m"],
   ];
 
-  private word = "";
-  private category: Category | "" = "";
-  private guessed = new Set<string>();
-  private errors = 0;
-  private gameOver = false;
+  private state: GameState = this.freshState();
   private streak = 0;
 
   constructor() {
@@ -28,21 +32,23 @@ class HangmanGame {
     this.init();
   }
 
+  private freshState(): GameState {
+    const { word, category } = randomWord();
+    return { word, category, guessed: new Set(), errors: 0, gameOver: false };
+  }
+
   private init(): void {
-    ({ word: this.word, category: this.category } = randomWord());
-    this.guessed = new Set();
-    this.errors = 0;
-    this.gameOver = false;
+    this.state = this.freshState();
 
     this.resetKeyboard();
     this.renderWord();
     this.renderHearts();
-    this.updateHangman();
+    updateHangman(0);
     this.hideModal();
     this.renderStreak();
 
     (document.getElementById("wrong-display") as HTMLElement).textContent = "—";
-    (document.getElementById("category-display") as HTMLElement).textContent = this.category;
+    (document.getElementById("category-display") as HTMLElement).textContent = this.state.category;
   }
 
   private renderStreak(): void {
@@ -76,10 +82,11 @@ class HangmanGame {
   }
 
   private renderWord(): void {
-    (document.getElementById("word-display") as HTMLElement).innerHTML = this.word
+    const { word, guessed } = this.state;
+    (document.getElementById("word-display") as HTMLElement).innerHTML = word
       .split("")
       .map(l =>
-        `<span class="letter${this.guessed.has(l) ? " revealed" : ""}">${this.guessed.has(l) ? l : ""}</span>`
+        `<span class="letter${guessed.has(l) ? " revealed" : ""}">${guessed.has(l) ? l : ""}</span>`
       )
       .join("");
   }
@@ -88,7 +95,7 @@ class HangmanGame {
     (document.getElementById("hearts") as HTMLElement).innerHTML = Array.from(
       { length: this.maxErrors },
       (_, i) => `
-        <svg class="heart ${i < this.maxErrors - this.errors ? "active" : "lost"}" viewBox="0 0 24 24">
+        <svg class="heart ${i < this.maxErrors - this.state.errors ? "active" : "lost"}" viewBox="0 0 24 24">
           <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191
             1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447
             2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
@@ -96,26 +103,21 @@ class HangmanGame {
     ).join("");
   }
 
-  private updateHangman(): void {
-    this.parts.forEach((part, i) => {
-      document.getElementById(part)!.classList.toggle("visible", i < this.errors);
-    });
-  }
-
   private guess(letter: string): void {
-    if (this.gameOver || this.guessed.has(letter)) return;
+    const { gameOver, guessed, word } = this.state;
+    if (gameOver || guessed.has(letter)) return;
 
-    this.guessed.add(letter);
+    guessed.add(letter);
     const btn = document.getElementById(`key-${letter}`) as HTMLButtonElement;
 
-    if (this.word.includes(letter)) {
+    if (word.includes(letter)) {
       btn.classList.add("correct");
     } else {
       btn.classList.add("wrong");
-      this.errors++;
-      this.updateHangman();
+      this.state.errors++;
+      updateHangman(this.state.errors);
       this.renderHearts();
-      const wrong = [...this.guessed].filter(l => !this.word.includes(l));
+      const wrong = [...guessed].filter(l => !word.includes(l));
       (document.getElementById("wrong-display") as HTMLElement).textContent =
         wrong.length ? wrong.map(l => l.toUpperCase()).join("  ") : "—";
     }
@@ -126,17 +128,18 @@ class HangmanGame {
   }
 
   private checkEnd(): void {
-    const won = this.word.split("").every(l => this.guessed.has(l));
-    const lost = this.errors >= this.maxErrors;
+    const { word, guessed, errors } = this.state;
+    const won = word.split("").every(l => guessed.has(l));
+    const lost = errors >= this.maxErrors;
     if (!won && !lost) return;
 
-    this.gameOver = true;
+    this.state.gameOver = true;
 
     if (won) {
       this.streak++;
     } else {
       this.streak = 0;
-      this.word.split("").forEach(l => this.guessed.add(l));
+      word.split("").forEach(l => guessed.add(l));
       this.renderWord();
     }
 
@@ -148,7 +151,7 @@ class HangmanGame {
     (document.getElementById("modal-title") as HTMLElement).className = won ? "win" : "lose";
     (document.getElementById("modal-subtitle") as HTMLElement).textContent =
       won ? "Adivinaste la palabra:" : "La palabra era:";
-    (document.getElementById("modal-word") as HTMLElement).textContent = this.word.toUpperCase();
+    (document.getElementById("modal-word") as HTMLElement).textContent = this.state.word.toUpperCase();
     (document.getElementById("modal-streak") as HTMLElement).textContent =
       won && this.streak > 1 ? `¡${this.streak} seguidas!` : "";
     document.getElementById("modal")!.classList.add("active");
