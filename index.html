@@ -11,6 +11,7 @@
   <header class="app-header">
     <h1>AHORCADO</h1>
     <p>Adivina la palabra letra por letra</p>
+    <p id="streak-display" class="streak"></p>
   </header>
 
   <main class="game-card">
@@ -41,6 +42,10 @@
           <div id="word-display"></div>
         </div>
         <div>
+          <p class="section-label">Categoría</p>
+          <p id="category-display" class="category-badge"></p>
+        </div>
+        <div>
           <p class="section-label">Letras incorrectas</p>
           <div id="wrong-display">—</div>
         </div>
@@ -58,10 +63,11 @@
       <h2 id="modal-title"></h2>
       <p id="modal-subtitle"></p>
       <p id="modal-word"></p>
+      <p id="modal-streak" class="modal-streak"></p>
       <button id="restart-btn">Jugar de nuevo</button>
     </div>
   </div>
 
-  <script src="dist/game.js"></script>
+  <script type="module" src="dist/game.js"></script>
 </body>
 </html>

@@ -1,11 +1,6 @@
-class HangmanGame {
-  private readonly words = [
-    "typescript", "javascript", "programacion", "computadora",
-    "algoritmo", "variable", "funcion", "interfaz", "compilador",
-    "desarrollo", "framework", "biblioteca", "servidor", "cliente",
-    "protocolo", "depuracion", "herencia", "polimorfismo", "recursion",
-  ];
+import { randomWord, Category } from "./words.js";
 
+class HangmanGame {
   private readonly maxErrors = 6;
   private readonly parts = ["head", "body", "left-arm", "right-arm", "left-leg", "right-leg"];
   private readonly qwerty = [
@@ -15,9 +10,11 @@ class HangmanGame {
   ];
 
   private word = "";
+  private category: Category | "" = "";
   private guessed = new Set<string>();
   private errors = 0;
   private gameOver = false;
+  private streak = 0;
 
   constructor() {
     (document.getElementById("restart-btn") as HTMLButtonElement)
@@ -32,7 +29,7 @@ class HangmanGame {
   }
 
   private init(): void {
-    this.word = this.words[Math.floor(Math.random() * this.words.length)];
+    ({ word: this.word, category: this.category } = randomWord());
     this.guessed = new Set();
     this.errors = 0;
     this.gameOver = false;
@@ -42,8 +39,15 @@ class HangmanGame {
     this.renderHearts();
     this.updateHangman();
     this.hideModal();
+    this.renderStreak();
 
     (document.getElementById("wrong-display") as HTMLElement).textContent = "—";
+    (document.getElementById("category-display") as HTMLElement).textContent = this.category;
+  }
+
+  private renderStreak(): void {
+    const el = document.getElementById("streak-display") as HTMLElement;
+    el.textContent = this.streak > 0 ? `Racha: ${this.streak}` : "";
   }
 
   private buildKeyboard(): void {
@@ -128,7 +132,10 @@ class HangmanGame {
 
     this.gameOver = true;
 
-    if (lost) {
+    if (won) {
+      this.streak++;
+    } else {
+      this.streak = 0;
       this.word.split("").forEach(l => this.guessed.add(l));
       this.renderWord();
     }
@@ -142,6 +149,8 @@ class HangmanGame {
     (document.getElementById("modal-subtitle") as HTMLElement).textContent =
       won ? "Adivinaste la palabra:" : "La palabra era:";
     (document.getElementById("modal-word") as HTMLElement).textContent = this.word.toUpperCase();
+    (document.getElementById("modal-streak") as HTMLElement).textContent =
+      won && this.streak > 1 ? `¡${this.streak} seguidas!` : "";
     document.getElementById("modal")!.classList.add("active");
   }
 

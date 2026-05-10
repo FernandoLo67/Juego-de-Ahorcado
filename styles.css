@@ -291,3 +291,32 @@ body {
   opacity: 0.85;
   transform: translateY(-2px);
 }
+
+/* Streak en header */
+.streak {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--success);
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+  min-height: 1em;
+}
+
+/* Badge de categoría */
+.category-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  min-height: 1em;
+}
+
+/* Racha en modal */
+.modal-streak {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--success);
+  margin-bottom: 16px;
+  min-height: 1.2em;
+  letter-spacing: 0.04em;
+}
