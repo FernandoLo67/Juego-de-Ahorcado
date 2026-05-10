@@ -1,4 +1,4 @@
-import { randomWord, Category } from "./words.js";
+import { randomWord, Category, CATEGORIES } from "./words.js";
 import { updateHangman } from "./hangman-svg.js";
 
 interface GameState {
@@ -19,6 +19,7 @@ class HangmanGame {
 
   private state: GameState = this.freshState();
   private streak = Number(localStorage.getItem("streak") ?? 0);
+  private selectedCategory: Category | null = null;
 
   constructor() {
     (document.getElementById("restart-btn") as HTMLButtonElement)
@@ -28,12 +29,13 @@ class HangmanGame {
       if (/^[a-zA-Z]$/.test(e.key)) this.guess(e.key.toLowerCase());
     });
 
+    this.buildCategoryPicker();
     this.buildKeyboard();
     this.init();
   }
 
   private freshState(): GameState {
-    const { word, category } = randomWord();
+    const { word, category } = randomWord(this.selectedCategory ?? undefined);
     return { word, category, guessed: new Set(), errors: 0, gameOver: false };
   }
 
@@ -54,6 +56,31 @@ class HangmanGame {
   private renderStreak(): void {
     const el = document.getElementById("streak-display") as HTMLElement;
     el.textContent = this.streak > 0 ? `Racha: ${this.streak}` : "";
+  }
+
+  private buildCategoryPicker(): void {
+    const container = document.getElementById("category-picker")!;
+
+    const allBtn = document.createElement("button");
+    allBtn.className = "cat-btn active";
+    allBtn.textContent = "Aleatoria";
+    allBtn.addEventListener("click", () => this.selectCategory(null, allBtn));
+    container.appendChild(allBtn);
+
+    CATEGORIES.forEach(cat => {
+      const btn = document.createElement("button");
+      btn.className = "cat-btn";
+      btn.textContent = cat;
+      btn.addEventListener("click", () => this.selectCategory(cat, btn));
+      container.appendChild(btn);
+    });
+  }
+
+  private selectCategory(cat: Category | null, btn: HTMLButtonElement): void {
+    this.selectedCategory = cat;
+    document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    this.init();
   }
 
   private buildKeyboard(): void {

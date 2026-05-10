@@ -1,5 +1,7 @@
 export type Category = "Programación" | "Animales" | "Países" | "Deportes";
 
+export const CATEGORIES: Category[] = ["Programación", "Animales", "Países", "Deportes"];
+
 const wordsByCategory: Record<Category, string[]> = {
   "Programación": [
     "typescript", "javascript", "programacion", "computadora", "algoritmo",
@@ -21,9 +23,8 @@ const wordsByCategory: Record<Category, string[]> = {
   ],
 };
 
-export function randomWord(): { word: string; category: Category } {
-  const categories = Object.keys(wordsByCategory) as Category[];
-  const category = categories[Math.floor(Math.random() * categories.length)];
-  const words = wordsByCategory[category];
-  return { word: words[Math.floor(Math.random() * words.length)], category };
+export function randomWord(category?: Category): { word: string; category: Category } {
+  const cat = category ?? CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+  const words = wordsByCategory[cat];
+  return { word: words[Math.floor(Math.random() * words.length)], category: cat };
 }
