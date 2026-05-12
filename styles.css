@@ -372,6 +372,14 @@ body {
   min-height: 1em;
 }
 
+/* Estadísticas en modal */
+.modal-stats {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+}
+
 /* Racha en modal */
 .modal-streak {
   font-size: 0.9rem;

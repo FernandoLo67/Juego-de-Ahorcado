@@ -9,6 +9,11 @@ interface GameState {
   gameOver: boolean;
 }
 
+interface Stats {
+  played: number;
+  won: number;
+}
+
 class HangmanGame {
   private readonly qwerty = [
     ["q","w","e","r","t","y","u","i","o","p"],
@@ -18,6 +23,7 @@ class HangmanGame {
 
   private state: GameState = this.freshState();
   private streak = Number(localStorage.getItem("streak") ?? 0);
+  private stats: Stats = JSON.parse(localStorage.getItem("stats") ?? '{"played":0,"won":0}');
   private selectedCategory: Category | null = null;
   private difficulty: Difficulty = "Normal";
 
@@ -195,8 +201,10 @@ class HangmanGame {
 
     this.state.gameOver = true;
 
+    this.stats.played++;
     if (won) {
       this.streak++;
+      this.stats.won++;
       localStorage.setItem("streak", String(this.streak));
     } else {
       this.streak = 0;
@@ -204,6 +212,7 @@ class HangmanGame {
       word.split("").forEach(l => guessed.add(l));
       this.renderWord();
     }
+    localStorage.setItem("stats", JSON.stringify(this.stats));
 
     this.showModal(won);
   }
@@ -216,6 +225,11 @@ class HangmanGame {
     (document.getElementById("modal-word") as HTMLElement).textContent = this.state.word.toUpperCase();
     (document.getElementById("modal-streak") as HTMLElement).textContent =
       won && this.streak > 1 ? `¡${this.streak} seguidas!` : "";
+    const pct = this.stats.played > 0
+      ? Math.round((this.stats.won / this.stats.played) * 100)
+      : 0;
+    (document.getElementById("modal-stats") as HTMLElement).textContent =
+      `Jugadas: ${this.stats.played}  •  Ganadas: ${this.stats.won}  •  Acierto: ${pct}%`;
     document.getElementById("modal")!.classList.add("active");
   }
 
