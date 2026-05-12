@@ -1,4 +1,4 @@
-import { randomWord, Category, CATEGORIES } from "./words.js";
+import { randomWord, Category, CATEGORIES, Difficulty } from "./words.js";
 import { updateHangman } from "./hangman-svg.js";
 
 interface GameState {
@@ -10,7 +10,6 @@ interface GameState {
 }
 
 class HangmanGame {
-  private readonly maxErrors = 6;
   private readonly qwerty = [
     ["q","w","e","r","t","y","u","i","o","p"],
     ["a","s","d","f","g","h","j","k","l"],
@@ -20,6 +19,11 @@ class HangmanGame {
   private state: GameState = this.freshState();
   private streak = Number(localStorage.getItem("streak") ?? 0);
   private selectedCategory: Category | null = null;
+  private difficulty: Difficulty = "Normal";
+
+  private get maxErrors(): number {
+    return this.difficulty === "Difícil" ? 5 : 6;
+  }
 
   constructor() {
     (document.getElementById("restart-btn") as HTMLButtonElement)
@@ -30,12 +34,13 @@ class HangmanGame {
     });
 
     this.buildCategoryPicker();
+    this.buildDifficultyPicker();
     this.buildKeyboard();
     this.init();
   }
 
   private freshState(): GameState {
-    const { word, category } = randomWord(this.selectedCategory ?? undefined);
+    const { word, category } = randomWord(this.selectedCategory ?? undefined, this.difficulty);
     return { word, category, guessed: new Set(), errors: 0, gameOver: false };
   }
 
@@ -50,7 +55,8 @@ class HangmanGame {
     this.renderStreak();
 
     (document.getElementById("wrong-display") as HTMLElement).textContent = "—";
-    (document.getElementById("category-display") as HTMLElement).textContent = this.state.category;
+    (document.getElementById("category-display") as HTMLElement).textContent =
+      this.difficulty === "Difícil" ? "???" : this.state.category;
   }
 
   private renderStreak(): void {
@@ -80,6 +86,33 @@ class HangmanGame {
     this.selectedCategory = cat;
     document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
+    this.init();
+  }
+
+  private buildDifficultyPicker(): void {
+    const container = document.getElementById("difficulty-picker")!;
+    const levels: Array<{ label: string; value: Difficulty; cls: string }> = [
+      { label: "Fácil",   value: "Fácil",   cls: "active-easy" },
+      { label: "Normal",  value: "Normal",  cls: "active-normal" },
+      { label: "Difícil", value: "Difícil", cls: "active-hard" },
+    ];
+
+    levels.forEach(({ label, value, cls }) => {
+      const btn = document.createElement("button");
+      btn.className = `diff-btn${value === this.difficulty ? ` ${cls}` : ""}`;
+      btn.dataset.cls = cls;
+      btn.textContent = label;
+      btn.addEventListener("click", () => this.selectDifficulty(value, btn));
+      container.appendChild(btn);
+    });
+  }
+
+  private selectDifficulty(diff: Difficulty, btn: HTMLButtonElement): void {
+    this.difficulty = diff;
+    document.querySelectorAll(".diff-btn").forEach(b => {
+      b.classList.remove("active-easy", "active-normal", "active-hard");
+    });
+    btn.classList.add(btn.dataset.cls!);
     this.init();
   }
 
